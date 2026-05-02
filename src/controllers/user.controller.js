@@ -1,5 +1,11 @@
 import { User } from '../models/user.model.js';
 
+
+function sanitizeUser(user) {
+  const userObj = user.toObject() ? user.toObject() : user;
+  delete userObj.password;
+  return userObj;
+}
 /**
  * TODO: List all users (Admin only)
  *
@@ -9,6 +15,9 @@ import { User } from '../models/user.model.js';
 export async function listUsers(req, res, next) {
   try {
     // Your code here
+    const users = await User.find();
+    res.status(200).json({ users: users.map(sanitizeUser) });
+  
   } catch (error) {
     next(error);
   }
@@ -25,6 +34,15 @@ export async function listUsers(req, res, next) {
 export async function getUser(req, res, next) {
   try {
     // Your code here
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ error: { message: "User not found" } });
+    }
+
+    res.status(200).json({ user: sanitizeUser(user) });
   } catch (error) {
     next(error);
   }
@@ -41,6 +59,16 @@ export async function getUser(req, res, next) {
 export async function deleteUser(req, res, next) {
   try {
     // Your code here
+
+    const { id } = req.params;
+
+    const user = await User.findByIdAndDelete(id);
+
+    if (!user) {
+      return res.status(404).json({ error: { message: "User not found" } });
+    }
+
+    res.status(200).json({ message: "User deleted successfully" }); 
   } catch (error) {
     next(error);
   }
